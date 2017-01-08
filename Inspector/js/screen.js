@@ -8,6 +8,10 @@
  */
 
 import React from 'react';
+import HTTP from 'js/http';
+
+const TAP_ENDPOINT = 'tap/0';
+const STATUS_ENDPOINT = 'status';
 
 require('css/screen.css');
 
@@ -41,9 +45,22 @@ class Screen extends React.Component {
     return this.props.screenshot ? this.props.screenshot : {};
   }
 
+  _onPressButton(e) {
+    var x = e.pageX - e.target.x
+    var y = e.pageY - e.target.y
+
+    var screenX = x / e.target.width * e.target.naturalWidth
+    var screenY = y / e.target.height * e.target.naturalHeight
+
+    HTTP.getSessionId((id) => {
+      HTTP.post(`session/${id}/${TAP_ENDPOINT}`, {'x': screenX, 'y': screenY}, (x, y) => {});  
+    });
+  }
+
   renderScreenshot() {
     return (
       <img
+        onClick={this._onPressButton}
         className="screen-screenshot"
         src={this.screenshot().source}
         style={this.styleWithScreenSize()} />

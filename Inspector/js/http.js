@@ -22,9 +22,22 @@ class Http {
     ajax.send();
   }
 
-  static post(path, callback) {
+  static getSessionId(callback) {
+    let ajax = new Ajax({
+      url: "status",
+      method: 'GET',
+    });
+    ajax.on('success', event => {
+      var response = JSON.parse(event.target.responseText);
+      callback(response.sessionId);
+    });
+    ajax.send();
+  }
+
+  static post(path, data, callback) {
     let ajax = new Ajax({
       url: path,
+      data: JSON.stringify(data),
       method: 'POST',
     });
     ajax.on('success', event => {

@@ -19,7 +19,7 @@ import Inspector from 'js/inspector';
 
 require('css/app.css')
 
-const SCREENSHOT_ENDPOINT = 'screenshot';
+const SCREENSHOT_ENDPOINT = 'screenshot-lowres';
 const TREE_ENDPOINT = 'source';
 const ORIENTATION_ENDPOINT = 'orientation';
 
@@ -30,28 +30,23 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    this.fetchScreenshot();
-    this.fetchTree();
+    var intervalID = setInterval(() => {
+      this.fetchScreenshot();
+    }, 400);
   }
 
   fetchScreenshot() {
-    HTTP.get(ORIENTATION_ENDPOINT, (orientation) => {
-      HTTP.get(SCREENSHOT_ENDPOINT, (base64EncodedImage) => {
-        ScreenshotFactory.createScreenshot(orientation, base64EncodedImage, (screenshot) => {
-          this.setState({
-            screenshot: screenshot,
-          });
+    HTTP.get(SCREENSHOT_ENDPOINT, (base64EncodedImage) => {
+      ScreenshotFactory.createScreenshot('PORTRAIT', base64EncodedImage, (screenshot) => {
+        this.setState({
+          screenshot: screenshot,
         });
       });
     });
   }
 
-  fetchTree() {
-    HTTP.get(TREE_ENDPOINT, (treeInfo) => {
-      this.setState({
-        rootNode: TreeNode.buildNode(treeInfo.tree, new TreeContext()),
-      });
-    });
+  tapPoint(x, y) {
+    HTTP.post(TAP_ENDPOINT, {'x': x, 'y': y}, (x, y) => {});
   }
 
   render() {
@@ -61,20 +56,6 @@ class App extends React.Component {
           highlightedNode={this.state.highlightedNode}
           screenshot={this.state.screenshot}
           rootNode={this.state.rootNode} />
-  			<Tree
-          onHighlightedNodeChange={(node) => {
-            this.setState({
-              highlightedNode: node,
-            });
-          }}
-          onSelectedNodeChange={(node) => {
-            this.setState({
-              selectedNode: node,
-            });
-          }}
-          rootNode={this.state.rootNode}
-          selectedNode={this.state.selectedNode} />
-  			<Inspector selectedNode={this.state.selectedNode} />
   		</div>
     );
   }
